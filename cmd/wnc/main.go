@@ -6,7 +6,7 @@ import (
 	"github.com/jessevdk/go-flags"
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-runewidth"
-	"github.com/nocd5/weather"
+	"github.com/nocd5/go-weather"
 	"os"
 	"strings"
 )
