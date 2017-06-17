@@ -12,14 +12,24 @@ import (
 )
 
 func Get(loc int) *WeatherNews {
-	proxy, err := url.Parse(os.Getenv("HTTPS_PROXY"))
-	if err != nil {
-		panic(err)
+	var tr *http.Transport
+
+	https_proxy := os.Getenv("HTTPS_PROXY")
+	if len(https_proxy) > 0 {
+		proxy, err := url.Parse(https_proxy)
+		if err != nil {
+			panic(err)
+		}
+		tr = &http.Transport{
+			Proxy:           http.ProxyURL(proxy),
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+	} else {
+		tr = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
 	}
-	tr := &http.Transport{
-		Proxy:           http.ProxyURL(proxy),
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
+
 	client := &http.Client{Transport: tr}
 
 	// ex) 東京:44132
