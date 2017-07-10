@@ -1,6 +1,7 @@
 package weather
 
 type WeatherNews struct {
+	URL         string
 	Observatory map[string]string
 
 	Date struct {

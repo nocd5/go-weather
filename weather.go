@@ -33,7 +33,8 @@ func Get(loc int) *WeatherNews {
 	client := &http.Client{Transport: tr}
 
 	// ex) 東京:44132
-	res, err := client.Get(fmt.Sprintf("https://weathernews.jp/pinpoint/xml/%d.xml", loc))
+	url := fmt.Sprintf("https://weathernews.jp/pinpoint/xml/%d.xml", loc)
+	res, err := client.Get(url)
 	if err != nil {
 		panic(err)
 	}
@@ -44,6 +45,9 @@ func Get(loc int) *WeatherNews {
 	}
 
 	wn := new(WeatherNews)
+	wn.URL = url
+	wn.URL += fmt.Sprintf("\nhttp://weathernews.jp/pinpoint/cgi/search_result.fcgi?service=11&ameno=%d", loc)
+
 	wn.Observatory = Observatory()[loc]
 
 	// minimum temperature has chance of `nodata`

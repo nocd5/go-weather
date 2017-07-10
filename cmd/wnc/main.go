@@ -91,6 +91,7 @@ func (x *ListCmd) Execute(args []string) error {
 }
 
 type WeekCmd struct {
+	Debug bool `long:"debug" short:"d" description:"debug" hidden:"true"`
 }
 
 func getWeather(locs []int) map[int]weather.WeatherNews {
@@ -113,12 +114,19 @@ func (x *WeekCmd) Execute(args []string) error {
 			v.Observatory["都府県振興局"],
 			v.Observatory["観測所名"],
 			v.Observatory["所在地"])
+		if x.Debug {
+			fmt.Fprintf(stdOut, "%s\n", v.URL)
+		}
 		for i := range v.Data.Week.Weather.Day {
 			dc := WHITE
 			if v.Date.Week.Holiday[i] == 1 {
 				dc = RED
 			}
-			fmt.Fprintf(stdOut, "%02d(%s%s"+END+") "+RED+"%3d"+END+" /"+BLUE+"%3d"+END+" %3d%s %s\n",
+			dbgmsg := ""
+			if x.Debug {
+				dbgmsg = fmt.Sprintf("( %d \u2192 ) ", v.Data.Week.Weather.Day[i])
+			}
+			fmt.Fprintf(stdOut, "%02d(%s%s"+END+") "+RED+"%3d"+END+" /"+BLUE+"%3d"+END+" %3d%s %s%s\n",
 				v.Date.Week.Date[i],
 				dc,
 				dow[v.Date.Week.Day[i]],
@@ -126,6 +134,7 @@ func (x *WeekCmd) Execute(args []string) error {
 				v.Data.Week.Temperature.Day[i].Min,
 				v.Data.Week.ChanceOfRain.Day[i],
 				v.Data.Week.ChanceOfRain.Unit,
+				dbgmsg,
 				weather.TelopList[v.Data.Week.Weather.Day[i]])
 		}
 		fmt.Fprintln(stdOut)
@@ -135,7 +144,8 @@ func (x *WeekCmd) Execute(args []string) error {
 }
 
 type TodayCmd struct {
-	TimeSpan int `long:"span" short:"s" description:"Time span of today's weather report" default:"3"`
+	TimeSpan int  `long:"span" short:"s" description:"Time span of today's weather report" default:"3"`
+	Debug    bool `long:"debug" short:"d" description:"debug"`
 }
 
 func (x *TodayCmd) Execute(args []string) error {
@@ -150,6 +160,9 @@ func (x *TodayCmd) Execute(args []string) error {
 			v.Observatory["都府県振興局"],
 			v.Observatory["観測所名"],
 			v.Observatory["所在地"])
+		if x.Debug {
+			fmt.Fprintf(stdOut, "%s\n", v.URL)
+		}
 		minT = v.Data.Day.Temperature.Hour[0]
 		maxT = v.Data.Day.Temperature.Hour[0]
 		for _, t := range v.Data.Day.Temperature.Hour {
@@ -158,13 +171,18 @@ func (x *TodayCmd) Execute(args []string) error {
 		}
 		for d, w := range v.Data.Day.Weather.Hour {
 			if d%x.TimeSpan == 0 {
-				fmt.Fprintf(stdOut, "%2d時%s%3d%s %3d%s %s\n",
+				dbgmsg := ""
+				if x.Debug {
+					dbgmsg = fmt.Sprintf("( %d \u2192 ) ", w)
+				}
+				fmt.Fprintf(stdOut, "%2d時%s%3d%s %3d%s %s%s\n",
 					(v.Data.Day.StartHour+d)%24,
 					bar[int(float64(v.Data.Day.Temperature.Hour[d]-minT)/float64(maxT-minT)*float64(len(bar)-1)+0.5)],
 					v.Data.Day.Temperature.Hour[d],
 					v.Data.Day.Temperature.Unit,
 					v.Data.Day.Precipitation.Hour[d],
 					v.Data.Day.Precipitation.Unit,
+					dbgmsg,
 					weather.TelopList[w])
 			}
 		}
